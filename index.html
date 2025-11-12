@@ -1,99 +1,58 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>プロンプト管理ツール</title>
-    <style>
-        /* 簡易的なCSSで見た目を整えます */
-        body {
-            font-family: sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 800px;
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 5px;
-        }
-        #promptSelector {
-            width: 100%;
-            padding: 8px;
-            font-size: 16px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-        #promptDisplay {
-            width: calc(100% - 20px); /* 100%からpadding分を引く */
-            height: 300px;
-            margin-top: 15px;
-            padding: 10px;
-            font-size: 14px;
-            line-height: 1.6;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #copyButton {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        #copyButton:hover {
-            background-color: #0056b3;
-        }
-        #copyMessage {
-            margin-top: 10px;
-            color: green;
-            font-weight: bold;
-            text-align: center;
-            height: 20px; /* メッセージ用のスペースを確保 */
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>プロンプト管理（検索・タグ・コピー対応）</title>
+<style>
+  :root{--bg:#f3f6fb;--card:#fff;--ink:#0f172a;--muted:#64748b;--brand:#2563eb;--brand-ink:#1e40af;--ring:rgba(37,99,235,0.3);--code-bg:#0b1020}
+  *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;color:var(--ink);background:linear-gradient(180deg,var(--bg),#e9eef8 40%,#e5ecff)}
+  .container{max-width:1080px;margin:24px auto;padding:0 16px}
+  header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:clamp(20px,2.4vw,28px);margin:0;font-weight:800}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .input,.select{appearance:none;border:1px solid #cbd5e1;background:#fff;border-radius:12px;padding:12px 14px;font-size:14px;min-width:240px;outline:none}
+  .input:focus,.select:focus{border-color:var(--brand);box-shadow:0 0 0 4px var(--ring)}
+  .btn{border:none;background:var(--brand);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(37,99,235,.25)}
+  .btn:hover{background:var(--brand-ink)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .card{grid-column:span 12;background:var(--card);border-radius:16px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 12px 24px rgba(2,6,23,.06);border:1px solid #e5e7eb;overflow:hidden}
+  @media(min-width:860px){.card{grid-column:span 6}}
+  .card-header{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid #eef2f7}
+  .title{font-weight:800;font-size:16px}
+  .tag{font-size:12px;color:#0a2;background:#e7f8ee;padding:4px 8px;border-radius:999px;margin-left:8px}
+  .meta{color:var(--muted);font-size:12px}
+  .card-body{padding:0 16px 14px 16px}
+  details{border-radius:12px;background:#f7f9ff;margin:12px 0;border:1px solid #e6ecff}
+  summary{cursor:pointer;padding:12px 14px;font-weight:700}
+  .code-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;background:#0b1020;color:#cbd5e1}
+  pre{margin:0;padding:14px;background:var(--code-bg);color:#dbe2ff;border-bottom-left-radius:12px;border-bottom-right-radius:12px;overflow:auto;font-size:13px;line-height:1.5}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;white-space:pre}
+  .copy{background:#111827;color:#fff;border:1px solid #374151;padding:6px 10px;border-radius:8px;cursor:pointer}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+  .footer{margin:20px 0;color:var(--muted);font-size:12px;text-align:center}
+</style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>プロンプト管理ツール</h1>
-
-        <label for="promptSelector">プロンプトを選択:</label>
-        <select id="promptSelector"></select>
-
-        <label for="promptDisplay">プロンプト本文:</label>
-        <textarea id="promptDisplay"></textarea>
-
-        <button id="copyButton">プロンプトをコピー</button>
-        <div id="copyMessage"></div>
+<div class="container">
+  <header>
+    <div>
+      <h1>プロンプト管理</h1>
+      <div class="meta">検索・タグで絞り込み／コードは Copy でクリップボードへ</div>
     </div>
+    <div class="toolbar">
+      <input id="q" class="input" placeholder="検索（タイトル・本文・タグ・コード）" />
+      <select id="tag" class="select"><option value="">すべてのタグ</option></select>
+      <button class="btn" id="expand">すべて展開</button>
+      <button class="btn" id="collapse">すべて閉じる</button>
+    </div>
+  </header>
 
-    <script src="main.js"></script>
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" style="display:none">一致する項目がありません。</div>
+  <div class="footer">プロンプトデータは <code>prompts.json</code> で管理されています。</div>
+</div>
 
+<script src="main.js"></script>
 </body>
 </html>
