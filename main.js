@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       card.appendChild(header);
       card.appendChild(body);
-      grid.appendChild(card);
+      grid.appendChild(card); // <<< ここがエラーになっている
 
       // code-X にプロンプト本文をテキストとして設定 (HTMLとして解釈させない)
       body.querySelector('#code-'+d.id).textContent = d.code;
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
       [...tagSet].sort().forEach(t => {
         const opt = document.createElement('option');
         opt.value = t; opt.textContent = t;
-        tagSel.appendChild(opt);
+        tagSel.appendChild(opt); // <<< あるいはここがエラーの可能性
       });
       
       // 最初の描画を実行
